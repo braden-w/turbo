@@ -7747,6 +7747,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "sourcemap"
+version = "8.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf0b8c0d9d32f81aa0ab2b68ab634d9bbce287423606656fddb456ac8601aec3"
+dependencies = [
+ "base64-simd",
+ "bitvec",
+ "data-encoding",
+ "debugid",
+ "if_chain",
+ "rustc-hash",
+ "rustc_version 0.2.3",
+ "serde",
+ "serde_json",
+ "unicode-id-start",
+ "url 2.4.1",
+]
+
+[[package]]
 name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8101,7 +8120,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_atoms",
  "swc_cached",
  "swc_common",
@@ -8226,7 +8245,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "siphasher",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_atoms",
  "swc_eq_ignore_macros",
  "swc_visit",
@@ -8249,7 +8268,7 @@ dependencies = [
  "once_cell",
  "pathdiff",
  "serde",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_atoms",
  "swc_common",
  "swc_config",
@@ -8271,7 +8290,7 @@ dependencies = [
  "indexmap 2.2.3",
  "serde",
  "serde_json",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_cached",
  "swc_config_macro",
 ]
@@ -8290,9 +8309,9 @@ dependencies = [
 
 [[package]]
 name = "swc_core"
-version = "0.90.24"
+version = "0.90.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "354892a17af24956c9ae5479c2bd0a2f9c344aab79e6f2fbd01b7b8eb4e46c2e"
+checksum = "1e18fa3e847ec83b97c27226233f683b62c03a10e24f44d139465fa876a5774a"
 dependencies = [
  "binding_macros",
  "swc",
@@ -8508,7 +8527,7 @@ dependencies = [
  "once_cell",
  "rustc-hash",
  "serde",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_atoms",
  "swc_common",
  "swc_ecma_ast",
@@ -9106,7 +9125,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_common",
  "swc_ecma_ast",
  "swc_ecma_codegen",
@@ -9200,7 +9219,7 @@ dependencies = [
  "radix_fmt",
  "regex",
  "serde",
- "sourcemap",
+ "sourcemap 6.4.1",
  "swc_atoms",
  "swc_common",
  "swc_ecma_ast",
@@ -11000,7 +11019,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
- "sourcemap",
+ "sourcemap 8.0.0",
  "swc_core",
  "tokio",
  "tracing",
@@ -11112,7 +11131,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
- "sourcemap",
+ "sourcemap 8.0.0",
  "swc_core",
  "tokio",
  "tracing",
@@ -11288,7 +11307,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
- "sourcemap",
+ "sourcemap 8.0.0",
  "tracing",
  "turbo-tasks",
  "turbo-tasks-build",
@@ -12128,6 +12147,12 @@ name = "unicode-id"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d70b6494226b36008c8366c288d77190b3fad2eb4c10533139c1c1f461127f1a"
+
+[[package]]
+name = "unicode-id-start"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8f73150333cb58412db36f2aca8f2875b013049705cc77b94ded70a1ab1f5da"
 
 [[package]]
 name = "unicode-ident"
