@@ -357,6 +357,7 @@ impl RunBuilder {
             engine.task_definitions(),
             &self.repo_root,
             &run_telemetry,
+            &mut daemon,
         )?;
 
         if self.opts.run_opts.parallel {
