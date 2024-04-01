@@ -4,6 +4,7 @@ use std::{
     sync::Arc,
 };
 
+use biome_deserialize_macros::Deserializable;
 use camino::Utf8Path;
 use miette::{NamedSource, SourceSpan};
 use serde::{Deserialize, Serialize};
@@ -95,15 +96,11 @@ impl From<&RawRemoteCacheOptions> for ConfigurationOptions {
     }
 }
 
-#[derive(Serialize, Default, Debug, Clone, Iterable)]
+#[derive(Serialize, Default, Debug, Clone, Iterable, Deserializable)]
 #[serde(rename_all = "camelCase")]
 // The raw deserialized turbo.json file.
 pub struct RawTurboJson {
-    #[serde(skip)]
-    // The raw text of the turbo.json file.
-    text: Option<Arc<str>>,
-    #[serde(skip)]
-    path: Option<Arc<str>>,
+    span: Spanned<()>,
 
     #[serde(rename = "$schema", skip_serializing_if = "Option::is_none")]
     schema: Option<UnescapedString>,
@@ -485,8 +482,8 @@ impl TryFrom<RawTurboJson> for TurboJson {
         }
 
         Ok(TurboJson {
-            text: raw_turbo.text,
-            path: raw_turbo.path,
+            text: raw_turbo.span.text,
+            path: raw_turbo.span.path,
             global_env: {
                 let mut global_env: Vec<_> = global_env.into_iter().collect();
                 global_env.sort();

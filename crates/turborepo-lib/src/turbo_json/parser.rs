@@ -512,15 +512,15 @@ impl DeserializationVisitor for ConfigurationOptionsVisitor {
     }
 }
 
-impl Deserializable for RawTurboJson {
-    fn deserialize(
-        value: &impl DeserializableValue,
-        name: &str,
-        diagnostics: &mut Vec<DeserializationDiagnostic>,
-    ) -> Option<Self> {
-        value.deserialize(RawTurboJsonVisitor, name, diagnostics)
-    }
-}
+// impl Deserializable for RawTurboJson {
+//     fn deserialize(
+//         value: &impl DeserializableValue,
+//         name: &str,
+//         diagnostics: &mut Vec<DeserializationDiagnostic>,
+//     ) -> Option<Self> {
+//         value.deserialize(RawTurboJsonVisitor, name, diagnostics)
+//     }
+// }
 
 struct RawTurboJsonVisitor;
 
@@ -623,7 +623,7 @@ impl DeserializationVisitor for RawTurboJsonVisitor {
 
 impl WithMetadata for RawTurboJson {
     fn add_text(&mut self, text: Arc<str>) {
-        self.text = Some(text.clone());
+        self.span.add_text(text.clone());
         self.extends.add_text(text.clone());
         self.global_dependencies.add_text(text.clone());
         self.global_env.add_text(text.clone());
@@ -632,7 +632,7 @@ impl WithMetadata for RawTurboJson {
     }
 
     fn add_path(&mut self, path: Arc<str>) {
-        self.path = Some(path.clone());
+        self.span.add_path(path.clone());
         self.extends.add_path(path.clone());
         self.global_dependencies.add_path(path.clone());
         self.global_env.add_path(path.clone());
@@ -710,6 +710,7 @@ impl RawTurboJson {
         let result = deserialize_from_json_str::<RawTurboJson>(
             text,
             JsonParserOptions::default().with_allow_comments(),
+            file_path.as_str(),
         );
 
         if !result.diagnostics().is_empty() {
