@@ -1,5 +1,6 @@
 use std::{backtrace, backtrace::Backtrace, env, fmt, fmt::Display, io, mem, process};
 
+use biome_deserialize_macros::Deserializable;
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::{
     builder::NonEmptyStringValueParser, ArgAction, ArgGroup, CommandFactory, Parser, Subcommand,
@@ -43,7 +44,7 @@ const DEFAULT_NUM_WORKERS: u32 = 10;
 const SUPPORTED_GRAPH_FILE_EXTENSIONS: [&str; 8] =
     ["svg", "png", "jpg", "pdf", "json", "html", "mermaid", "dot"];
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ValueEnum)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ValueEnum, Deserializable)]
 pub enum OutputLogsMode {
     #[serde(rename = "full")]
     Full,

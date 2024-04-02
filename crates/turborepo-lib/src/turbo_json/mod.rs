@@ -28,12 +28,10 @@ use crate::{
 
 pub mod parser;
 
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone, Deserializable)]
 #[serde(rename_all = "camelCase")]
 pub struct SpacesJson {
     pub id: Option<UnescapedString>,
-    #[serde(flatten)]
-    pub other: Option<serde_json::Value>,
 }
 
 // A turbo.json config that is synthesized but not yet resolved.
@@ -59,7 +57,7 @@ pub struct TurboJson {
 }
 
 // Iterable is required to enumerate allowed keys
-#[derive(Clone, Debug, Default, Iterable, Serialize)]
+#[derive(Clone, Debug, Default, Iterable, Serialize, Deserializable)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct RawRemoteCacheOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -128,6 +126,9 @@ pub struct RawTurboJson {
     pub(crate) remote_cache: Option<RawRemoteCacheOptions>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "experimentalUI")]
     pub experimental_ui: Option<bool>,
+
+    #[deserializable(rename = "//")]
+    _comment: Option<String>,
 }
 
 #[derive(Serialize, Default, Debug, PartialEq, Clone)]
@@ -158,11 +159,11 @@ impl DerefMut for Pipeline {
     }
 }
 
-#[derive(Serialize, Default, Debug, PartialEq, Clone, Iterable)]
+#[derive(Serialize, Default, Debug, PartialEq, Clone, Iterable, Deserializable)]
 #[serde(rename_all = "camelCase")]
 pub struct RawTaskDefinition {
-    #[serde(skip_serializing_if = "Spanned::is_none")]
-    cache: Spanned<Option<bool>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cache: Option<Spanned<bool>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     depends_on: Option<Spanned<Vec<Spanned<UnescapedString>>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -197,9 +198,12 @@ impl RawTaskDefinition {
     pub fn merge(&mut self, other: RawTaskDefinition) {
         set_field!(self, other, outputs);
 
-        if other.cache.value.is_some()
+        let other_has_range = other.cache.as_ref().map_or(false, |c| c.range.is_some());
+        let self_does_not_have_range = self.cache.as_ref().map_or(false, |c| c.range.is_none());
+
+        if other.cache.is_some()
             // If other has range info and we're missing it, carry it over
-            || (other.cache.range.is_some() && self.cache.range.is_none())
+            || (other_has_range && self_does_not_have_range)
         {
             self.cache = other.cache;
         }
@@ -266,7 +270,7 @@ impl TryFrom<RawTaskDefinition> for TaskDefinition {
     fn try_from(raw_task: RawTaskDefinition) -> Result<Self, Error> {
         let outputs = raw_task.outputs.unwrap_or_default().try_into()?;
 
-        let cache = raw_task.cache.into_inner().unwrap_or(true);
+        let cache = raw_task.cache.map_or(true, |c| c.into_inner());
         let interactive = raw_task
             .interactive
             .as_ref()
@@ -608,7 +612,7 @@ impl TurboJson {
                 turbo_json.pipeline.insert(
                     task_name,
                     Spanned::new(RawTaskDefinition {
-                        cache: Spanned::new(Some(false)),
+                        cache: Some(Spanned::new(false)),
                         ..RawTaskDefinition::default()
                     }),
                 );
@@ -784,6 +788,7 @@ mod tests {
         }
     )]
     #[test_case(r#"{ "//": "A comment"}"#, TurboJson::default() ; "faux comment")]
+    #[test_case(r#"{ "//": "A comment", "//": "Another comment" }"#, TurboJson::default() ; "two faux comments")]
     fn test_get_root_turbo_no_synthesizing(
         turbo_json_content: &str,
         expected_turbo_json: TurboJson,
@@ -799,6 +804,7 @@ mod tests {
             &root_package_json,
             false,
         )?;
+
         turbo_json.text = None;
         turbo_json.path = None;
         assert_eq!(turbo_json, expected_turbo_json);
@@ -816,7 +822,7 @@ mod tests {
             pipeline: Pipeline([(
                 "//#build".into(),
                 Spanned::new(RawTaskDefinition {
-                    cache: Spanned::new(Some(false)),
+                    cache: Some(Spanned::new(false)),
                     ..RawTaskDefinition::default()
                 })
               )].into_iter().collect()
@@ -848,14 +854,14 @@ mod tests {
             pipeline: Pipeline([(
                 "//#build".into(),
                 Spanned::new(RawTaskDefinition {
-                    cache: Spanned::new(Some(true)).with_range(84..88),
+                    cache: Some(Spanned::new(true).with_range(84..88)),
                     ..RawTaskDefinition::default()
                 }).with_range(53..106)
             ),
             (
                 "//#test".into(),
                 Spanned::new(RawTaskDefinition {
-                     cache: Spanned::new(Some(false)),
+                     cache: Some(Spanned::new(false)),
                     ..RawTaskDefinition::default()
                 })
             )].into_iter().collect()),
@@ -941,7 +947,7 @@ mod tests {
             env: Some(vec![Spanned::<UnescapedString>::new("OS".into()).with_range(98..102)]),
             pass_through_env: Some(vec![Spanned::<UnescapedString>::new("AWS_SECRET_KEY".into()).with_range(134..150)]),
             outputs: Some(vec![Spanned::<UnescapedString>::new("package/a/dist".into()).with_range(175..191)]),
-            cache: Spanned::new(Some(false)).with_range(213..218),
+            cache: Some(Spanned::new(false).with_range(213..218)),
             inputs: Some(vec![Spanned::<UnescapedString>::new("package/a/src/**".into()).with_range(241..259)]),
             output_mode: Some(Spanned::new(OutputLogsMode::Full).with_range(286..292)),
             persistent: Some(Spanned::new(true).with_range(318..322)),
@@ -983,7 +989,7 @@ mod tests {
             env: Some(vec![Spanned::<UnescapedString>::new("OS".into()).with_range(112..116)]),
             pass_through_env: Some(vec![Spanned::<UnescapedString>::new("AWS_SECRET_KEY".into()).with_range(152..168)]),
             outputs: Some(vec![Spanned::<UnescapedString>::new("package\\a\\dist".into()).with_range(197..215)]),
-            cache: Spanned::new(Some(false)).with_range(241..246),
+            cache: Some(Spanned::new(false).with_range(241..246)),
             inputs: Some(vec![Spanned::<UnescapedString>::new("package\\a\\src\\**".into()).with_range(273..294)]),
             output_mode: Some(Spanned::new(OutputLogsMode::Full).with_range(325..331)),
             persistent: Some(Spanned::new(true).with_range(361..365)),
@@ -1015,6 +1021,7 @@ mod tests {
         let deserialized_result = deserialize_from_json_str(
             task_definition_content,
             JsonParserOptions::default().with_allow_comments(),
+            "turbo.json",
         );
         let raw_task_definition: RawTaskDefinition =
             deserialized_result.into_deserialized().unwrap();
