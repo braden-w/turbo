@@ -20,12 +20,9 @@ use thiserror::Error;
 use turbopath::AnchoredSystemPath;
 use turborepo_errors::WithMetadata;
 
-use super::RawRemoteCacheOptions;
 use crate::{
-    cli::OutputLogsMode,
-    config::ConfigurationOptions,
     run::task_id::TaskName,
-    turbo_json::{Pipeline, RawTaskDefinition, RawTurboJson, SpacesJson, Spanned},
+    turbo_json::{Pipeline, RawTaskDefinition, RawTurboJson, Spanned},
     unescape::UnescapedString,
 };
 
@@ -141,108 +138,6 @@ impl DeserializationVisitor for PipelineVisitor {
         }
 
         Some(Pipeline(result))
-    }
-}
-
-impl Deserializable for ConfigurationOptions {
-    fn deserialize(
-        value: &impl DeserializableValue,
-        name: &str,
-        diagnostics: &mut Vec<DeserializationDiagnostic>,
-    ) -> Option<Self> {
-        value.deserialize(ConfigurationOptionsVisitor, name, diagnostics)
-    }
-}
-
-struct ConfigurationOptionsVisitor;
-
-impl DeserializationVisitor for ConfigurationOptionsVisitor {
-    type Output = ConfigurationOptions;
-
-    const EXPECTED_TYPE: VisitableType = VisitableType::MAP;
-
-    fn visit_map(
-        self,
-        // Iterator of key-value pairs.
-        members: impl Iterator<Item = Option<(impl DeserializableValue, impl DeserializableValue)>>,
-        // range of the map in the source text.
-        _: TextRange,
-        _name: &str,
-        diagnostics: &mut Vec<DeserializationDiagnostic>,
-    ) -> Option<Self::Output> {
-        let mut result = ConfigurationOptions::default();
-        for (key, value) in members.flatten() {
-            // Try to deserialize the key as a string.
-            // We use `Text` to avoid an heap-allocation.
-            let Some(key_text) = Text::deserialize(&key, "", diagnostics) else {
-                // If this failed, then pass to the next key-value pair.
-                continue;
-            };
-            match key_text.text() {
-                "apiUrl" | "apiurl" | "ApiUrl" | "APIURL" => {
-                    if let Some(api_url) =
-                        UnescapedString::deserialize(&value, &key_text, diagnostics)
-                    {
-                        result.api_url = Some(api_url.into());
-                    }
-                }
-                "loginUrl" | "loginurl" | "LoginUrl" | "LOGINURL" => {
-                    if let Some(login_url) =
-                        UnescapedString::deserialize(&value, &key_text, diagnostics)
-                    {
-                        result.login_url = Some(login_url.into());
-                    }
-                }
-                "teamSlug" | "teamslug" | "TeamSlug" | "TEAMSLUG" => {
-                    if let Some(team_slug) =
-                        UnescapedString::deserialize(&value, &key_text, diagnostics)
-                    {
-                        result.team_slug = Some(team_slug.into());
-                    }
-                }
-                "teamId" | "teamid" | "TeamId" | "TEAMID" => {
-                    if let Some(team_id) =
-                        UnescapedString::deserialize(&value, &key_text, diagnostics)
-                    {
-                        result.team_id = Some(team_id.into());
-                    }
-                }
-                "token" => {
-                    if let Some(token) =
-                        UnescapedString::deserialize(&value, &key_text, diagnostics)
-                    {
-                        result.token = Some(token.into());
-                    }
-                }
-                "signature" => {
-                    if let Some(signature) = bool::deserialize(&value, &key_text, diagnostics) {
-                        result.signature = Some(signature);
-                    }
-                }
-                "preflight" => {
-                    if let Some(preflight) = bool::deserialize(&value, &key_text, diagnostics) {
-                        result.preflight = Some(preflight);
-                    }
-                }
-                "timeout" => {
-                    if let Some(timeout) = u64::deserialize(&value, &key_text, diagnostics) {
-                        result.timeout = Some(timeout);
-                    }
-                }
-                "enabled" => {
-                    if let Some(enabled) = bool::deserialize(&value, &key_text, diagnostics) {
-                        result.enabled = Some(enabled);
-                    }
-                }
-                unknown_key => diagnostics.push(create_unknown_key_diagnostic_from_struct(
-                    &result,
-                    unknown_key,
-                    key.range(),
-                )),
-            }
-        }
-
-        Some(result)
     }
 }
 
