@@ -133,6 +133,16 @@ impl GlobSet {
         };
         Self::from_raw(includes, excludes)
     }
+
+    pub fn is_package_local(&self) -> bool {
+        self.include
+            .keys()
+            .all(|raw_glob| !raw_glob.starts_with("../"))
+            && self
+                .exclude_raw
+                .iter()
+                .all(|raw_glob| !raw_glob.starts_with("../"))
+    }
 }
 
 #[derive(Debug, Error)]
