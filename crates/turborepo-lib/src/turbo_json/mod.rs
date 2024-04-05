@@ -161,6 +161,7 @@ impl DerefMut for Pipeline {
 
 #[derive(Serialize, Default, Debug, PartialEq, Clone, Iterable, Deserializable)]
 #[serde(rename_all = "camelCase")]
+#[deserializable(unknown_fields = "deny")]
 pub struct RawTaskDefinition {
     #[serde(skip_serializing_if = "Option::is_none")]
     cache: Option<Spanned<bool>>,

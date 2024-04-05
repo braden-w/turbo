@@ -46,6 +46,8 @@ const SUPPORTED_GRAPH_FILE_EXTENSIONS: [&str; 8] =
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ValueEnum, Deserializable)]
 pub enum OutputLogsMode {
+    // biome also obeys serde rename directives,
+    // so the `Deserializable` derive will work properly here
     #[serde(rename = "full")]
     Full,
     #[serde(rename = "none")]
