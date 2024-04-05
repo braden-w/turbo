@@ -1,6 +1,5 @@
 use std::{collections::HashMap, ffi::OsString, io};
 
-use biome_deserialize_macros::Deserializable;
 use convert_case::{Case, Casing};
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use serde::Deserialize;

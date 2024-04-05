@@ -7,12 +7,11 @@ use std::{
 
 use biome_deserialize::{
     json::deserialize_from_json_str, Deserializable, DeserializableValue,
-    DeserializationDiagnostic, DeserializationVisitor, Text, VisitableType,
+    DeserializationDiagnostic, DeserializationVisitor, VisitableType,
 };
 use biome_diagnostics::DiagnosticExt;
 use biome_json_parser::JsonParserOptions;
 use biome_json_syntax::TextRange;
-use clap::ValueEnum;
 use convert_case::{Case, Casing};
 use miette::{Diagnostic, SourceSpan};
 use struct_iterable::Iterable;

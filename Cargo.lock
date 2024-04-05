@@ -5708,7 +5708,7 @@ dependencies = [
  "pest_meta",
  "proc-macro2",
  "quote",
- "syn 2.0.32",
+ "syn 2.0.57",
 ]
 
 [[package]]
